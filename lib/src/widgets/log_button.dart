@@ -1,20 +1,41 @@
-import 'package:chat_app/src/pages/loading_page.dart';
+import 'package:chat_app/src/pages/contacts_page.dart';
+import 'package:chat_app/src/pages/registration_page.dart';
 import 'package:chat_app/src/providers/loading_provider.dart';
+import 'package:chat_app/src/providers/page_provider.dart';
+import 'package:chat_app/src/providers/user_data.dart';
+import 'package:chat_app/src/services/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class LogButton extends StatelessWidget {
   final String text;
   final GlobalKey<FormState> formKey;
-  const LogButton({this.text, this.formKey});
+  LogButton({this.text, this.formKey});
+  final AuthMethods authMethods = AuthMethods();
   Widget build(BuildContext context) {
+    final pageProvider = Provider.of<PageProvider>(context);
+    final userData = Provider.of<UserLogInfo>(context);
     final loadingChecker = Provider.of<LoadingProvider>(context);
     return GestureDetector(
-      onTap: (){
-        if(formKey.currentState.validate()){
+      onTap: () {
+        SystemChannels.textInput.invokeMethod('TextInput.hide'); //To hide the keyboard
+        if (formKey.currentState.validate()) {
           loadingChecker.isLoading = true;
-          if(loadingChecker.isLoading == true){
-            Navigator.pushNamed(context, LoadingPage.routeName);
+          if (pageProvider.actualRoute == RegisterPage.routeName) {
+            authMethods.signUpEmailAndPassword(
+                userData.email, userData.password).then((val){
+                  //print('${val.id}');
+                  loadingChecker.isLoading = false;
+                  Navigator.pushReplacementNamed(context, ContactsPage.routeName);
+                });
+          } else {
+            authMethods.signInEmailAndPassword(
+                userData.email, userData.password).then((val){
+                  //print('${val.id}');
+                  loadingChecker.isLoading = false;
+                  Navigator.pushReplacementNamed(context, ContactsPage.routeName);
+                });
           }
         }
       },

@@ -2,9 +2,9 @@ import 'package:chat_app/src/widgets/already_account_line.dart';
 import 'package:chat_app/src/widgets/forgot_password_button.dart';
 import 'package:chat_app/src/widgets/form_fields.dart';
 import 'package:chat_app/src/widgets/google_button.dart';
+import 'package:chat_app/src/widgets/loading_widget.dart';
 import 'package:chat_app/src/widgets/log_button.dart';
 import 'package:flutter/material.dart';
-
 
 class LogInPage extends StatefulWidget {
   static final String routeName = 'SignIn';
@@ -43,6 +43,7 @@ class _LogInPageState extends State<LogInPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     SizedBox(height: size.height * 0.2),
+                    LoadingWidget(),
                     _Title(
                       title: 'Nearby',
                     ),
@@ -55,7 +56,10 @@ class _LogInPageState extends State<LogInPage> {
                     SizedBox(height: 20.0),
                     GoogleButton(),
                     SizedBox(height: 20.0),
-                    AlreadyAccount(text1: "Don't have an account?", text2: 'Register now',),
+                    AlreadyAccount(
+                      text1: "Don't have an account?",
+                      text2: 'Register now',
+                    ),
                   ],
                 ),
               ),

@@ -2,8 +2,10 @@ import 'package:chat_app/src/widgets/already_account_line.dart';
 import 'package:chat_app/src/widgets/forgot_password_button.dart';
 import 'package:chat_app/src/widgets/form_fields.dart';
 import 'package:chat_app/src/widgets/google_button.dart';
+import 'package:chat_app/src/widgets/loading_widget.dart';
 import 'package:chat_app/src/widgets/log_button.dart';
 import 'package:flutter/material.dart';
+
 
 class RegisterPage extends StatefulWidget {
   static final String routeName = 'registration';
@@ -43,6 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     SizedBox(height: size.height * 0.2),
+                    LoadingWidget(),
                     _Title(
                       title: 'Nearby',
                     ),
@@ -70,6 +73,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 }
+
 
 class _Title extends StatelessWidget {
   final String title;

@@ -1,3 +1,4 @@
+import 'package:chat_app/src/pages/contacts_page.dart';
 import 'package:chat_app/src/pages/loading_page.dart';
 import 'package:chat_app/src/pages/log_in_page.dart';
 import 'package:chat_app/src/pages/registration_page.dart';
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
           LogInPage.routeName     : (BuildContext context) => LogInPage(),
           TestPage.routeName      : (BuildContext context) => TestPage(),
           LoadingPage.routeName   : (BuildContext context) => LoadingPage(),
+          ContactsPage.routeName  : (BuildContext context) => ContactsPage(),
         },
       ),
     );
