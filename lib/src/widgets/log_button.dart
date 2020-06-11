@@ -1,9 +1,12 @@
+import 'package:chat_app/src/models/user.dart';
 import 'package:chat_app/src/pages/contacts_page.dart';
 import 'package:chat_app/src/pages/registration_page.dart';
 import 'package:chat_app/src/providers/loading_provider.dart';
 import 'package:chat_app/src/providers/page_provider.dart';
+import 'package:chat_app/src/providers/right_info_provider.dart';
 import 'package:chat_app/src/providers/user_data.dart';
 import 'package:chat_app/src/services/auth.dart';
+import 'package:chat_app/src/services/database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -11,31 +14,53 @@ import 'package:provider/provider.dart';
 class LogButton extends StatelessWidget {
   final String text;
   final GlobalKey<FormState> formKey;
-  LogButton({this.text, this.formKey});
+  final GlobalKey<ScaffoldState> scaffoldkey;
+  LogButton({this.text, this.formKey, this.scaffoldkey});
   final AuthMethods authMethods = AuthMethods();
+  final DataBaseMethods db = DataBaseMethods();
   Widget build(BuildContext context) {
     final pageProvider = Provider.of<PageProvider>(context);
     final userData = Provider.of<UserLogInfo>(context);
     final loadingChecker = Provider.of<LoadingProvider>(context);
+    final infoCheck = Provider.of<RightLogProvider>(context);
     return GestureDetector(
       onTap: () {
-        SystemChannels.textInput.invokeMethod('TextInput.hide'); //To hide the keyboard
+        SystemChannels.textInput
+            .invokeMethod('TextInput.hide'); //To hide the keyboard
         if (formKey.currentState.validate()) {
           loadingChecker.isLoading = true;
           if (pageProvider.actualRoute == RegisterPage.routeName) {
-            authMethods.signUpEmailAndPassword(
-                userData.email, userData.password).then((val){
-                  //print('${val.id}');
-                  loadingChecker.isLoading = false;
-                  Navigator.pushReplacementNamed(context, ContactsPage.routeName);
-                });
+            authMethods
+                .signUpEmailAndPassword(userData.email, userData.password)
+                .then((User val) {
+              if (val != null) {
+                print('Well done ${val.userId}');
+                Map<String, String> userInfoMap = {
+                  'name' : userData.username,
+                  'email': userData.email, 
+                };
+                db.uploadUserInfo(userInfoMap);
+                loadingChecker.isLoading = false;
+                Navigator.pushReplacementNamed(context, ContactsPage.routeName);
+              } else {
+                loadingChecker.isLoading = false;
+              }
+            });
           } else {
-            authMethods.signInEmailAndPassword(
-                userData.email, userData.password).then((val){
-                  //print('${val.id}');
-                  loadingChecker.isLoading = false;
-                  Navigator.pushReplacementNamed(context, ContactsPage.routeName);
-                });
+            authMethods
+                .signInEmailAndPassword(userData.email, userData.password)
+                .then((User val) {
+              if (val != null) {
+                infoCheck.isRight = true;
+                loadingChecker.isLoading = false;
+                Navigator.pushReplacementNamed(context, ContactsPage.routeName);
+              } else {
+                infoCheck.isRight = false;
+                loadingChecker.isLoading = false;
+                _mostrarSnackBar(context, 'Email or Password Incorrect');
+                infoCheck.isRight = true;
+              }
+            });
           }
         }
       },
@@ -61,5 +86,18 @@ class LogButton extends StatelessWidget {
                 fontWeight: FontWeight.w300)),
       ),
     );
+  }
+
+    void _mostrarSnackBar(BuildContext context, String wordEs) {
+    final snackbar = SnackBar(
+      elevation: 0.0,
+      backgroundColor: Colors.grey,
+      content: Text(
+        wordEs,
+        textAlign: TextAlign.center,
+      ),
+      duration: Duration(milliseconds: 1000),
+    );
+    scaffoldkey.currentState.showSnackBar(snackbar);
   }
 }

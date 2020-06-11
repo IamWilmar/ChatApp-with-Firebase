@@ -14,10 +14,14 @@ class LogInPage extends StatefulWidget {
 
 class _LogInPageState extends State<LogInPage> {
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
+  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
+    //final infoCheck = Provider.of<RightLogProvider>(context);
     final size = MediaQuery.of(context).size;
     return Scaffold(
+      key: scaffoldKey,
       body: Container(
         height: size.height,
         width: size.width,
@@ -52,7 +56,7 @@ class _LogInPageState extends State<LogInPage> {
                     SizedBox(height: 20.0),
                     ForgotPasswordButton(),
                     SizedBox(height: 30.0),
-                    LogButton(text: 'Log In', formKey: formkey),
+                    LogButton(text: 'Log In', formKey: formkey, scaffoldkey: scaffoldKey),
                     SizedBox(height: 20.0),
                     GoogleButton(),
                     SizedBox(height: 20.0),

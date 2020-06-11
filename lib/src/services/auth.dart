@@ -8,25 +8,27 @@ class AuthMethods {
     return user != null ? User(userId: user.uid) : null;
   }
 
-  Future signInEmailAndPassword(String email, String password) async {
+  Future<User> signInEmailAndPassword(String email, String password) async {
     try {
       AuthResult result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
       FirebaseUser fireBaseUser = result.user;
       return _userFromFirebaseUser(fireBaseUser);
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
+      return null;
     }
   }
 
-  Future signUpEmailAndPassword(String email, String password) async {
+  Future<User> signUpEmailAndPassword(String email, String password) async {
     try {
       AuthResult result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       FirebaseUser fireBaseUser = result.user;
       return _userFromFirebaseUser(fireBaseUser);
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
+      return null;
     }
   }
 
