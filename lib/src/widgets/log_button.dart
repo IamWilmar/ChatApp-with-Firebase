@@ -7,6 +7,7 @@ import 'package:chat_app/src/providers/right_info_provider.dart';
 import 'package:chat_app/src/providers/user_data.dart';
 import 'package:chat_app/src/services/auth.dart';
 import 'package:chat_app/src/services/database.dart';
+import 'package:chat_app/src/shared/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,8 @@ class LogButton extends StatelessWidget {
     final userData = Provider.of<UserLogInfo>(context);
     final loadingChecker = Provider.of<LoadingProvider>(context);
     final infoCheck = Provider.of<RightLogProvider>(context);
+    final PreferenciasUsuario preferenciasUsuario = PreferenciasUsuario();
+
     return GestureDetector(
       onTap: () {
         SystemChannels.textInput
@@ -36,9 +39,13 @@ class LogButton extends StatelessWidget {
               if (val != null) {
                 print('Well done ${val.userId}');
                 Map<String, String> userInfoMap = {
-                  'name' : userData.username,
-                  'email': userData.email, 
+                  'name': userData.username,
+                  'email': userData.email,
                 };
+                preferenciasUsuario.isUserLogged = true;
+                preferenciasUsuario.userName = userData.username;
+                preferenciasUsuario.userEmail = userData.email;
+                preferenciasUsuario.userPassword = userData.password;
                 db.uploadUserInfo(userInfoMap);
                 loadingChecker.isLoading = false;
                 Navigator.pushReplacementNamed(context, ContactsPage.routeName);
@@ -49,8 +56,17 @@ class LogButton extends StatelessWidget {
           } else {
             authMethods
                 .signInEmailAndPassword(userData.email, userData.password)
-                .then((User val) {
+                .then((User val) async {
               if (val != null) {
+                await db.getUsernamebyId(userData.email).then((val) {
+                  print(val.documents[0].data['name'].toString());
+                  preferenciasUsuario.userName = val.documents[0].data['name'];
+                  print(
+                      'HELLLO PAY ATTENTION TO THIS: ${preferenciasUsuario.userName}');
+                });
+                preferenciasUsuario.userEmail = userData.email;
+                preferenciasUsuario.userPassword = userData.password;
+                preferenciasUsuario.isUserLogged = true;
                 infoCheck.isRight = true;
                 loadingChecker.isLoading = false;
                 Navigator.pushReplacementNamed(context, ContactsPage.routeName);
@@ -88,7 +104,7 @@ class LogButton extends StatelessWidget {
     );
   }
 
-    void _mostrarSnackBar(BuildContext context, String wordEs) {
+  void _mostrarSnackBar(BuildContext context, String wordEs) {
     final snackbar = SnackBar(
       elevation: 0.0,
       backgroundColor: Colors.grey,

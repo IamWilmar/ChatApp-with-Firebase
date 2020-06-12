@@ -1,12 +1,17 @@
+import 'package:chat_app/src/pages/conversation_page.dart';
+import 'package:chat_app/src/providers/conversation_info_provider.dart';
 import 'package:chat_app/src/providers/query_search_provider.dart';
 import 'package:chat_app/src/providers/search_provider.dart';
 import 'package:chat_app/src/services/database.dart';
+import 'package:chat_app/src/shared/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class SearchPage extends StatelessWidget {
   static final String routeName = 'search';
   final DataBaseMethods db = DataBaseMethods();
+  final PreferenciasUsuario prefs = PreferenciasUsuario();
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -21,10 +26,10 @@ class SearchPage extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-                db.getUsernameSearch(searchUser.search).then((val) {
-                  print(val.toString());
-                  searchQuery.searchQuery = val;
-                });
+              db.getUsernameSearch(searchUser.search).then((val) {
+                print(val.toString());
+                searchQuery.searchQuery = val;
+              });
             },
           ),
         ],
@@ -37,8 +42,10 @@ class SearchPage extends StatelessWidget {
                 itemCount: searchQuery.searchQuery.documents.length,
                 itemBuilder: (BuildContext context, int index) {
                   return _SearchTile(
-                    username: searchQuery.searchQuery.documents[index].data['name'],
-                    email:    searchQuery.searchQuery.documents[index].data['email'],
+                    username:
+                        searchQuery.searchQuery.documents[index].data['name'],
+                    email:
+                        searchQuery.searchQuery.documents[index].data['email'],
                   );
                 },
               ),
@@ -51,16 +58,45 @@ class _SearchTile extends StatelessWidget {
   final String username;
   final String email;
   _SearchTile({@required this.username, this.email});
+
+  final DataBaseMethods db = DataBaseMethods();
+  final PreferenciasUsuario prefs = PreferenciasUsuario();
+
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    final searchUser = Provider.of<SearchProvider>(context);
+    final chatInfo   = Provider.of<ChatInfoProvider>(context);
+
+    createChatRoom(String userSearch) {
+      List<String> users = [userSearch, prefs.userName];
+      String roomName = getchatRoomId(users[0], users[1]);
+      Map<String, dynamic> chatRoomMap = {
+        'users': users,
+        'chatRoomId': roomName,
+      };
+      DataBaseMethods().createChatRoom(roomName, chatRoomMap);
+      Navigator.pushNamed(context, ConversationPage.routeName);
+    }
+
+    return searchUser.search == prefs.userName ? Container() : ListTile(
       title: Text(username),
       subtitle: Text(email),
       trailing: IconButton(
-        onPressed: () {},
+        onPressed: () {
+          chatInfo.chatName = searchUser.search;
+          createChatRoom(searchUser.search);
+        },
         icon: Icon(Icons.message, color: Color(0xFF0A7BC2), size: 30),
       ),
     );
+  }
+
+  getchatRoomId(String a, String b) {
+    if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
+      return "$b\_$a";
+    } else {
+      return "$a\_$b";
+    }
   }
 }
 
