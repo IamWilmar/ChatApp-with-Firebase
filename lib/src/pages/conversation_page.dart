@@ -44,11 +44,13 @@ class _MessageList extends StatelessWidget {
                 (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
               if (snapshot.hasData) {
                 return ListView.builder(
+
                   itemCount: snapshot.data.documents.length,
                   itemBuilder: (BuildContext context, int index) {
                     return _MessageTile(
-                        message:
-                            snapshot.data.documents[index].data['message']);
+                      message: snapshot.data.documents[index].data['message'],
+                      sentby: snapshot.data.documents[index].data['sendBy'],
+                    );
                   },
                 );
               } else {
@@ -61,20 +63,43 @@ class _MessageList extends StatelessWidget {
 
 class _MessageTile extends StatelessWidget {
   final String message;
-  const _MessageTile({@required this.message});
+  final String sentby;
+  const _MessageTile({@required this.message, @required this.sentby});
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 10.0),
-      margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.0),
-          bottomRight: Radius.circular(20.0),
+    bool isItMe = false;
+    final PreferenciasUsuario prefs = PreferenciasUsuario();
+    if (prefs.userName == sentby) {
+      isItMe = true;
+    } else {
+      isItMe = false;
+    }
+    return Row(
+      mainAxisAlignment: isItMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          alignment: isItMe ? Alignment.centerRight: Alignment.centerLeft,
+          padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+          margin: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          decoration: BoxDecoration(
+            color: isItMe ? Colors.blue[400] : Colors.grey[300],
+            borderRadius: isItMe ? BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              bottomRight: Radius.circular(20.0),
+            ): BorderRadius.only(
+              topRight: Radius.circular(20.0),
+              bottomLeft: Radius.circular(20.0),
+            ) 
+          ),
+          child: Text(
+            message,
+            style: TextStyle(
+              fontSize: 18.0
+            ),
+            //textAlign: isItMe ? TextAlign.right : TextAlign.left,
+          ),
         ),
-      ),
-      child: Text(message),
+      ],
     );
   }
 }
@@ -131,31 +156,29 @@ class __TextMessageFieldState extends State<_TextMessageField> {
         controller.text = text;
       });
     }
-    return Container(
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          hintText: 'Type message',
-          hintStyle: TextStyle(
-            color: Colors.black45,
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white54),
-          ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white54),
-          ),
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: 'Type message',
+        hintStyle: TextStyle(
+          color: Colors.black45,
         ),
-        cursorColor: Colors.white,
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 20.0,
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white54),
         ),
-        onChanged: (message) {
-          chatInfo.isSent = false;
-          chatInfo.message = message;
-        },
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white54),
+        ),
       ),
+      cursorColor: Colors.white,
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 20.0,
+      ),
+      onChanged: (message) {
+        chatInfo.isSent = false;
+        chatInfo.message = message;
+      },
     );
   }
 }
